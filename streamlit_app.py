@@ -1,79 +1,78 @@
 import streamlit as st
-import streamlit_authenticator as stauth
-import yaml
-from yaml.loader import SafeLoader
+import json
+import hashlib
 from pathlib import Path
 
-# Define a function to load the user data from the YAML file
+# Path to the JSON file where user data is stored
+USER_DATA_FILE = 'users.json'
+
+# Function to load user data from JSON file
 def load_user_data():
-    config_path = Path('config.yaml')
-    if config_path.exists():
-        with open(config_path, 'r') as file:
-            config = yaml.load(file, Loader=SafeLoader)
-            if config is None:
-                config = {"usernames": {}}
-            return config
+    if Path(USER_DATA_FILE).exists():
+        with open(USER_DATA_FILE, 'r') as file:
+            return json.load(file)
     else:
-        return {"usernames": {}}
+        return {}
 
-# Define a function to save the user data to the YAML file
-def save_user_data(config):
-    with open('config.yaml', 'w') as file:
-        yaml.dump(config, file)
+# Function to save user data to JSON file
+def save_user_data(data):
+    with open(USER_DATA_FILE, 'w') as file:
+        json.dump(data, file)
 
-# Load the user data
-config = load_user_data()
+# Function to hash passwords
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
-# Ensure the 'usernames' key exists
-if 'usernames' not in config:
-    config['usernames'] = {}
+# Load user data
+user_data = load_user_data()
 
-# Initialize the authenticator
-authenticator = stauth.Authenticate(
-    config['usernames'],
-    'some_cookie_name',
-    'some_signature_key',
-    cookie_expiry_days=30
-)
+# Authentication status
+logged_in = False
+username = None
 
-# Authentication logic
-name, authentication_status, username = authenticator.login('Login', 'main')
+# User login/registration
+st.sidebar.title("Login / Register")
+choice = st.sidebar.selectbox("Choose Action", ["Login", "Register"])
 
-if authentication_status:
-    st.write(f'Welcome *{name}*')
-    st.title('Fill a Ticket')
+if choice == "Login":
+    st.sidebar.subheader("Login")
+    login_username = st.sidebar.text_input("Username")
+    login_password = st.sidebar.text_input("Password", type="password")
+    login_button = st.sidebar.button("Login")
+    
+    if login_button:
+        if login_username in user_data and user_data[login_username] == hash_password(login_password):
+            st.sidebar.success("Logged in successfully!")
+            logged_in = True
+            username = login_username
+        else:
+            st.sidebar.error("Invalid username or password")
 
-    # Ticket Form
+elif choice == "Register":
+    st.sidebar.subheader("Register")
+    reg_username = st.sidebar.text_input("New Username")
+    reg_password = st.sidebar.text_input("New Password", type="password")
+    reg_button = st.sidebar.button("Register")
+    
+    if reg_button:
+        if reg_username in user_data:
+            st.sidebar.error("Username already exists")
+        else:
+            user_data[reg_username] = hash_password(reg_password)
+            save_user_data(user_data)
+            st.sidebar.success("User registered successfully")
+
+# Main app
+if logged_in:
+    st.write(f"Welcome, {username}!")
+    st.title("Fill a Ticket")
+    
     with st.form("ticket_form"):
-        email = st.text_input('Enter the email of the person you are filling the ticket against:')
-        ticket_details = st.text_area('Enter ticket details:')
-        submit = st.form_submit_button('Submit')
-
+        email = st.text_input("Enter the email of the person you are filling the ticket against:")
+        ticket_details = st.text_area("Enter ticket details:")
+        submit = st.form_submit_button("Submit")
+        
         if submit:
-            st.success(f'Ticket submitted for {email}')
-elif authentication_status == False:
-    st.error('Username/password is incorrect')
-elif authentication_status == None:
-    st.warning('Please enter your username and password')
-
-# Registration
-st.sidebar.title("Register")
-new_username = st.sidebar.text_input('New username')
-new_name = st.sidebar.text_input('New name')
-new_email = st.sidebar.text_input('New email')
-new_password = st.sidebar.text_input('New password', type='password')
-register = st.sidebar.button('Register')
-
-if register:
-    if new_username in config['usernames']:
-        st.sidebar.error('Username already exists')
-    else:
-        hashed_password = stauth.Hasher([new_password]).generate()[0]
-        config['usernames'][new_username] = {
-            'name': new_name,
-            'email': new_email,
-            'password': hashed_password  # Store hashed password
-        }
-        save_user_data(config)
-        st.sidebar.success('User registered successfully')
-        st.sidebar.info('Please refresh the page and log in')
+            st.success(f"Ticket submitted for {email}")
+else:
+    st.warning("Please log in to access this section.")
