@@ -26,9 +26,11 @@ def hash_password(password):
 # Load user data
 user_data = load_user_data()
 
-# Authentication status
-logged_in = False
-username = None
+# Initialize session state
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+if 'username' not in st.session_state:
+    st.session_state.username = None
 
 # User login/registration
 st.sidebar.title("Login / Register")
@@ -42,13 +44,10 @@ if choice == "Login":
     
     if login_button:
         hashed_input_password = hash_password(login_password)
-        print(f"Hashed input password: {hashed_input_password}")
-        if login_username in user_data:
-            print(f"Stored password hash: {user_data[login_username]}")
         if login_username in user_data and user_data[login_username] == hashed_input_password:
             st.sidebar.success("Logged in successfully!")
-            logged_in = True
-            username = login_username
+            st.session_state.logged_in = True
+            st.session_state.username = login_username
         else:
             st.sidebar.error("Invalid username or password")
 
@@ -67,8 +66,8 @@ elif choice == "Register":
             st.sidebar.success("User registered successfully")
 
 # Main app
-if logged_in:
-    st.write(f"Welcome, {username}!")
+if st.session_state.logged_in:
+    st.write(f"Welcome, {st.session_state.username}!")
     st.title("Fill a Ticket")
     
     with st.form("ticket_form"):
