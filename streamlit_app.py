@@ -2,16 +2,18 @@ import streamlit as st
 import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
+from pathlib import Path
 
 # Define a function to load the user data from the YAML file
 def load_user_data():
-    try:
-        with open('config.yaml', 'r') as file:
+    config_path = Path('config.yaml')
+    if config_path.exists():
+        with open(config_path, 'r') as file:
             config = yaml.load(file, Loader=SafeLoader)
             if config is None:
                 config = {"usernames": {}}
             return config
-    except FileNotFoundError:
+    else:
         return {"usernames": {}}
 
 # Define a function to save the user data to the YAML file
@@ -22,6 +24,11 @@ def save_user_data(config):
 # Load the user data
 config = load_user_data()
 
+# Ensure the 'usernames' key exists
+if 'usernames' not in config:
+    config['usernames'] = {}
+
+# Initialize the authenticator
 authenticator = stauth.Authenticate(
     config['usernames'],
     'some_cookie_name',
@@ -29,6 +36,7 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=30
 )
 
+# Authentication logic
 name, authentication_status, username = authenticator.login('Login', 'main')
 
 if authentication_status:
