@@ -41,7 +41,11 @@ if choice == "Login":
     login_button = st.sidebar.button("Login")
     
     if login_button:
-        if login_username in user_data and user_data[login_username] == hash_password(login_password):
+        hashed_input_password = hash_password(login_password)
+        print(f"Hashed input password: {hashed_input_password}")
+        if login_username in user_data:
+            print(f"Stored password hash: {user_data[login_username]}")
+        if login_username in user_data and user_data[login_username] == hashed_input_password:
             st.sidebar.success("Logged in successfully!")
             logged_in = True
             username = login_username
