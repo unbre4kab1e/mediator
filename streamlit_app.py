@@ -8,7 +8,7 @@ users = {
     "usernames": {
         "johndoe": {
             "name": "John Doe",
-            "password": "123",  # Passwords should be hashed and stored securely
+            "password": stauth.Hasher(["123"]).generate()[0],  # Hashed password
             "email": "johndoe@example.com"
         }
     }
@@ -60,10 +60,11 @@ if register:
     if new_username in users['usernames']:
         st.sidebar.error('Username already exists')
     else:
+        hashed_password = stauth.Hasher([new_password]).generate()[0]
         users['usernames'][new_username] = {
             'name': new_name,
             'email': new_email,
-            'password': new_password  # Again, make sure to hash passwords in a real app
+            'password': hashed_password  # Store hashed password
         }
         with open('config.yaml', 'w') as file:
             yaml.dump(users, file)
