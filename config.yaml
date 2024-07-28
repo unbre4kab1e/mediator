@@ -1,5 +1,0 @@
-usernames:
-  johndoe:
-    name: John Doe
-    email: johndoe@example.com
-    password: $2b$12$KIXxP9.qs6RV9R.5VHFZEuXJtfFE9gxS0cC6A4mL.lXkRShz6HtL2  # This is a hashed password
