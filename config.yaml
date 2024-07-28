@@ -1,21 +1,5 @@
-credentials:
-  usernames:
-    jsmith:
-      email: abdo@gmail.com
-      failed_login_attempts: 0 # Will be managed automatically
-      logged_in: False # Will be managed automatically
-      name: John Smith
-      password: 123456 # Will be hashed automatically
-    rbriggs:
-      email: abdel@gmail.com
-      failed_login_attempts: 0 # Will be managed automatically
-      logged_in: False # Will be managed automatically
-      name: Rebecca Briggs
-      password: 123456 # Will be hashed automatically
-cookie:
-  expiry_days: 30
-  key: some_signature_key # Must be string
-  name: some_cookie_name
-pre-authorized:
-  emails:
-  - abdou@gmail.com
+usernames:
+  johndoe:
+    name: John Doe
+    email: johndoe@example.com
+    password: $2b$12$KIXxP9.qs6RV9R.5VHFZEuXJtfFE9gxS0cC6A4mL.lXkRShz6HtL2  # This is a hashed password
